@@ -2,11 +2,146 @@
 
 An alternative moblie-focused router/rpc middleware that uses the JSON body instead of URL slugs to route requests.
 
+The major advantage of to this approach is that it allows multiple requests per HTTP request to happen in a straight-forward manner.  This reduces latency in your client with resource constrained devices like mobile apps.
+
+JSON Router works similar to javascript function calls by taking a name and a variable number of arguments via an array.  The request object can handle an array of requests.  The values returned by each request handler and will be aggregated into a JSON array which will be returned to the client.
+
+JSON Router can take an optional callback if you would like to do custom handling on the result object.
+
 ## Install
 
 ```shell
 npm install --save json-router
 ```
+
+## Simple Usage
+
+API
+
+```javascript
+
+jsonRouter.newRequest(reqName, hanlderFunc);
+
+/**
+handlerFunc = function(context, arguments, callback)
+
+context = {
+  name: request name,
+  httpReq: http req object,
+  httpRes: http res object,
+  jsonRouter: reference to jsonRouter
+}
+
+arguments = [...]
+
+callback = function(err, result)
+
+**/
+
+app.use(jsonRouter.middleware(opts, callback));
+
+/**
+Both opts and callback are optional
+
+opts = {
+  reqProperty: name of top-level property that defined a JSON Router request (default: 'jsonRequests')
+}
+
+default callback
+
+callback = function(req, res, results, next) {
+  return res.json(results);
+}
+**/
+
+```
+
+Server
+
+```javascript
+
+var express = require('express');
+var bodyParser = require('body-parser');
+var jsonRouter = require('json-router');
+
+var app = express();
+app.use(bodyParser.json());
+
+jsonRouter.newRequest("myRequestName1", function(context, arguments, callback) {
+  // ...
+  return callback(null, retValue);
+});
+
+jsonRouter.newRequest("myRequestName2", function(context, arguments, callback) {
+  // ...
+  return callback(null, [retValue1, retValue2]);
+});
+
+app.use(jsonRouter.middleware());
+
+```
+
+Example of a JSON body request object sent using POST.  The middleware looks for JSON objects that have the top-level property 'jsonRequests' (this can be changed with the 'reqProperty' option).  If this property does not exist, it will continue with the middleware chain.
+
+```json
+
+{
+  "jsonRequests": {
+    "name": "myRequestName1",
+    "arguments": [ "foo" ]
+  }
+}
+
+```
+
+Example of a multiple-request object
+
+```json
+
+{
+  "jsonRequests": [
+  {
+    "name": "myRequestName1",
+    "arguments": [ "foo" ]
+  },
+  {
+    "name": "myRequestName2",
+    "arguments": [ "arg1", "arg2", "arg3" ]
+  }]
+}
+
+```
+
+Example of a response object
+
+```json
+
+[
+  {
+    "name": "myRequestName1",
+    "result": "myResult"
+  },
+  {
+    "name": "myRequestName2",
+    "arguments": [ 1, 2, 3 ]
+  }
+]
+
+```
+
+Example of a response object with an error.  Note that since multiple requests can occur per HTTP request, it may be possible that some requests succeeed while other fail.  Therefore, one should use the 'error' property on the return object to deteremine success instead of the HTTP code.
+
+```json
+
+[
+  {
+    "name": "myRequestName1",
+    "error": "My Error String"
+  }
+]
+
+```
+
 
 ## License
 

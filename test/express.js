@@ -125,7 +125,6 @@ describe("Express.js TestSuite", function() {
           return done(err);
         }
 
-
         // assertions
         expect(res.body).to.exist;
         expect(res.body).to.be.a('array').with.length(2);
