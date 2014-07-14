@@ -1,9 +1,12 @@
 var _ = require('lodash');
 var async = require('async');
-//util = require('util');
 
 module.exports = {
   _requests: {},
+
+  _defaultCallback: function(req, res, results, next) {
+    return res.json(results);
+  },
 
   getRequestHandler: function(name) {
     return this._requests[name];
@@ -15,6 +18,7 @@ module.exports = {
 
   middleware: function(callback) {
     var _self = this;
+    callback = (_.isFunction(callback) ? callback : _self._defaultCallback);
 
     return function(req, res, next) {
       // if there is no 'jsonRequests' parameter, then skip this middleware
@@ -54,15 +58,18 @@ module.exports = {
           // add reqName to result object
           var resObj = {};
           resObj[reqName] = result;
-          callback(err, resObj);
+          if (err) {
+            resObj.error = err.toString();
+          }
+          callback(null, resObj);
         });
       };
 
       var sendResponse = function(err, results) {
-        callback(err, req, res, results, next);
+        callback(req, res, results, next);
       };
 
-      // is this multiple requests?
+      // are there multiple requests?
       if (_.isArray(requestList)) {
         async.map(requestList, routeRequest, sendResponse);
       }

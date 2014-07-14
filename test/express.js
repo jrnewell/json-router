@@ -7,16 +7,13 @@ var _ = require('lodash');
 var jsonRouter = require('../index.js');
 chai.should();
 
-var util = require('util');
-
 describe("Express.js TestSuite", function() {
 
-  it("testing", function(done) {
+  it("Simple Request", function(done) {
     var app = express();
     app.use(bodyParser.json());
 
     jsonRouter.newRequest("testing", function(context, arguments, callback) {
-      console.log("testing request: " + util.inspect(arguments));
 
       // assertions
       try {
@@ -35,16 +32,7 @@ describe("Express.js TestSuite", function() {
 
       return callback(null, {result: 10});
     });
-    app.use(jsonRouter.middleware(function(err, req, res, results, next) {
-      if (err) {
-        res.status(500);
-        return res.json({
-          error: err.toString()
-        });
-      }
-      console.log("middleware callback: " + util.inspect(results));
-      res.json(results);
-    }));
+    app.use(jsonRouter.middleware());
 
     var postBody = {
       jsonRequests: {
@@ -63,11 +51,12 @@ describe("Express.js TestSuite", function() {
           return done(err);
         }
 
-        console.log("supertest callback: " + util.inspect(res.body));
-
         // assertions
         expect(res.body).to.exist;
         expect(res.body).to.be.a('object');
+        if (res.body.error) {
+          return done(new Error(res.body.error));
+        }
         res.body.should.have.property("testing");
         res.body.testing.should.have.property("result", 10);
 
