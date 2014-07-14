@@ -34,7 +34,7 @@ module.exports = {
     var reqProperty = opts.reqProperty;
 
     return function(req, res, next) {
-      // if there is no 'jsonRequests' parameter, then skip this middleware
+      // if there is no 'jsonRequests' (reqProperty) parameter, then skip this middleware
       var requestList = req.param(reqProperty);
       if (typeof requestList === 'undefined' || requestList === null) {
         return next();
@@ -70,7 +70,8 @@ module.exports = {
         reqMapping(context, reqArgs, function(err, result) {
           // build result object
           var resObj = {};
-          resObj[reqName] = result;
+          resObj.name = reqName;
+          resObj.result = result
           if (err) {
             resObj.error = err.toString();
           }
@@ -87,11 +88,14 @@ module.exports = {
         async.map(requestList, routeRequest, sendResponse);
       }
       else if (_.isObject(requestList)) {
-        routeRequest(requestList, sendResponse);
+        routeRequest(requestList, function(err, result) {
+          var resultArray = (result ? [result] : []);
+          sendResponse(err, resultArray);
+        });
       }
       else {
         // don't know what type this is
-        return next(new Error("jsonRequests needs to be an array or object"));
+        return next(new Error(reqProperty + " needs to be an array or object"));
       }
     };
   }
