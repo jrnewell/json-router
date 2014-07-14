@@ -1,6 +1,6 @@
 # JSON Router
 
-An alternative express router/rpc that uses json body instead of url slugs
+An alternative moblie-focused router/rpc middleware that uses the JSON body instead of URL slugs to route requests.
 
 ## Install
 

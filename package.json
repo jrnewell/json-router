@@ -1,7 +1,7 @@
 {
   "name": "json-router",
   "version": "0.0.1",
-  "description": "An alternative express router/rpc that uses json body instead of url slugs",
+  "description": "An alternative moblie-focused router/rpc middleware that uses the JSON body instead of URL slugs to route requests",
   "main": "./index.js",
   "repository": {
     "type": "git",
