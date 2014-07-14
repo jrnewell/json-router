@@ -16,13 +16,26 @@ module.exports = {
     this._requests[name] = handler;
   },
 
-  middleware: function(callback) {
+  middleware: function(opts, callback) {
     var _self = this;
+
+    // special case were we don't include an opts, but do include a callback
+    if (!_.isFunction(callback) && _.isFunction(opts)) {
+      callback = opts;
+      opts = {}
+    }
+
+    // set default options
+    opts = (_.isObject(opts) ? opts : {});
+    _.defaults(opts, {reqProperty: 'jsonRequests'});
     callback = (_.isFunction(callback) ? callback : _self._defaultCallback);
+
+    // get options
+    var reqProperty = opts.reqProperty;
 
     return function(req, res, next) {
       // if there is no 'jsonRequests' parameter, then skip this middleware
-      var requestList = req.param('jsonRequests');
+      var requestList = req.param(reqProperty);
       if (typeof requestList === 'undefined' || requestList === null) {
         return next();
       }
@@ -55,7 +68,7 @@ module.exports = {
         }
 
         reqMapping(context, reqArgs, function(err, result) {
-          // add reqName to result object
+          // build result object
           var resObj = {};
           resObj[reqName] = result;
           if (err) {
