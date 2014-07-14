@@ -1,0 +1,35 @@
+{
+  "name": "json-router",
+  "version": "0.0.1",
+  "description": "An alternative express router/rpc that uses json body instead of url slugs",
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jrnewell/json-router.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "lodash": "*",
+    "async": "*"
+  },
+  "devDependencies": {
+    "chai": "*",
+    "express": "*",
+    "body-parser": "*",
+    "supertest": "*"
+  },
+  "keywords": [
+    "router", "express", "connect", "json", "rpc", "mobile"
+  ],
+  "author": "James Newell <james.newell@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jrnewell/json-router/issues"
+  },
+  "engines": {
+    "node": ">=0.10",
+    "npm": ">=1.4"
+  }
+}
