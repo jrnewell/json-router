@@ -6,7 +6,6 @@ var bodyParser = require('body-parser');
 var _ = require('lodash');
 var jsonRouter = require('../index.js');
 chai.should();
-//var util = require('util');
 
 describe("Express.js TestSuite", function() {
 
@@ -51,8 +50,6 @@ describe("Express.js TestSuite", function() {
         if (err) {
           return done(err);
         }
-
-        //console.log("res.body: " + util.inspect(res.body));
 
         // assertions
         expect(res.body).to.exist;
@@ -114,8 +111,7 @@ describe("Express.js TestSuite", function() {
       },
       {
         name: "req2",
-        arguments: ["bar", 5],
-        dependsOn: "req1"
+        arguments: ["bar", 5]
       }]
     };
 
@@ -128,8 +124,6 @@ describe("Express.js TestSuite", function() {
         if (err) {
           return done(err);
         }
-
-        //console.log("res.body: " + util.inspect(res.body));
 
         // assertions
         expect(res.body).to.exist;
@@ -150,6 +144,73 @@ describe("Express.js TestSuite", function() {
         result.should.have.property("requestId", "req2");
         result.should.have.property("result");
         result.result.should.have.property("value", 5);
+
+        return done();
+      });
+  });
+
+  it("Dependency Failure", function(done) {
+    var app = express();
+    app.use(bodyParser.json());
+
+    jsonRouter.newRequest("req1", function(context, arguments, callback) {
+      return callback(new Error("My test error"));
+    });
+    jsonRouter.newRequest("req2", function(context, arguments, callback) {
+      return callback(null, {value: arguments[1]});
+    });
+    jsonRouter.newRequest("req3", function(context, arguments, callback) {
+      return callback(null, {value: "foobar"});
+    });
+    app.use(jsonRouter.middleware());
+
+    var postBody = {
+      jsonRequests: [
+      {
+        name: "req1",
+        arguments: ["foo"]
+      },
+      {
+        name: "req2",
+        arguments: ["bar", 5],
+        dependsOn: "req1"
+      },
+      {
+        name: "req3",
+        arguments: []
+      }]
+    };
+
+    supertest(app)
+      .post("/")
+      .send(postBody)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) {
+          return done(err);
+        }
+
+        // assertions
+        expect(res.body).to.exist;
+        expect(res.body).to.be.an('object').with.property("req1");
+        var result = res.body.req1
+        result.should.have.property("requestId", "req1");
+        result.should.have.property("error", "Error: My test error");
+
+        res.body.should.have.property("req2");
+        result = res.body.req2
+        result.should.have.property("requestId", "req2");
+        result.should.have.property("error", "Request skipped due to failed dependency");
+
+        res.body.should.have.property("req3");
+        result = res.body.req3
+        if (result.error) {
+          return done(new Error(result.error));
+        }
+        result.should.have.property("requestId", "req3");
+        result.should.have.property("result");
+        result.result.should.have.property("value", "foobar");
 
         return done();
       });

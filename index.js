@@ -133,7 +133,7 @@ module.exports = {
           }
         }
 
-        // iterate over tree to determine depth (stored in idx)
+        // iterate over tree to determine depth (stored in _orderIdx)
         for(var i = 0; i < requestList.length; i++) {
           var req = requestList[i];
           var recurse = function(idx, req) {
@@ -187,7 +187,7 @@ module.exports = {
       async.map(requestOrder, doRequest, function(err, results) {
         if (err) return next(err);
         sendResponse(null, _.indexBy(_.flatten(results), function(result) {
-          return result.requestId
+          return result.requestId;
         }));
       });
     };
