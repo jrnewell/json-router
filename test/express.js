@@ -6,7 +6,7 @@ var bodyParser = require('body-parser');
 var _ = require('lodash');
 var jsonRouter = require('../index.js');
 chai.should();
-var util = require('util');
+//var util = require('util');
 
 describe("Express.js TestSuite", function() {
 
@@ -52,10 +52,12 @@ describe("Express.js TestSuite", function() {
           return done(err);
         }
 
+        //console.log("res.body: " + util.inspect(res.body));
+
         // assertions
         expect(res.body).to.exist;
-        expect(res.body).to.be.a('array').with.length(1);
-        var result = res.body[0];
+        expect(res.body).to.be.an('object').with.property("testing");
+        var result = res.body.testing;
         if (result.error) {
           return done(new Error(result.error));
         }
@@ -67,7 +69,7 @@ describe("Express.js TestSuite", function() {
       });
   });
 
-  it.only("Multiple Requests", function(done) {
+  it("Multiple Requests", function(done) {
     var app = express();
     app.use(bodyParser.json());
 
@@ -84,7 +86,7 @@ describe("Express.js TestSuite", function() {
         return callback(err);
       }
 
-      return callback(new Error("test failure"), {value: "test"});
+      return callback(null, {value: "test"});
     });
     jsonRouter.newRequest("req2", function(context, arguments, callback) {
 
@@ -127,12 +129,12 @@ describe("Express.js TestSuite", function() {
           return done(err);
         }
 
-        console.log("res.body: " + util.inspect(res.body));
+        //console.log("res.body: " + util.inspect(res.body));
 
         // assertions
         expect(res.body).to.exist;
-        expect(res.body).to.be.a('array').with.length(2);
-        var result = res.body[0];
+        expect(res.body).to.be.an('object').with.property("req1");
+        var result = res.body.req1
         if (result.error) {
           return done(new Error(result.error));
         }
@@ -140,7 +142,8 @@ describe("Express.js TestSuite", function() {
         result.should.have.property("result");
         result.result.should.have.property("value", "test");
 
-        result = res.body[1];
+        res.body.should.have.property("req2");
+        result = res.body.req2
         if (result.error) {
           return done(new Error(result.error));
         }

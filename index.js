@@ -1,6 +1,5 @@
 var _ = require('lodash');
 var async = require('async');
-var util = require('util');
 
 module.exports = {
   _requests: {},
@@ -58,8 +57,6 @@ module.exports = {
           return callback(null, resObj);
         }
 
-        console.log("DEBUG: " + util.inspect(request));
-
         var reqName = request.name;
         if (typeof reqName === 'undefined' || reqName === null) {
           return callback(new Error("missing 'name' property for request"));
@@ -109,8 +106,6 @@ module.exports = {
         }
       }
 
-      console.log("requestList1: " + util.inspect(requestList));
-
       // initialize depedency metadata
       depMap = {};
       var anyDeps = false
@@ -122,8 +117,6 @@ module.exports = {
         depMap[req._depId] = req;
         if (!anyDeps) anyDeps = true;
       });
-
-      console.log("requestList2: " + util.inspect(requestList));
 
       // we can skip these parts if no dependencies were detected
       var requestOrder = [];
@@ -165,7 +158,6 @@ module.exports = {
           }
 
           // add to array
-          console.log("idx: " + req._orderIdx + " leng:" + requestOrder.length);
           requestOrder[req._orderIdx].push(req);
         }
       }
@@ -173,16 +165,10 @@ module.exports = {
         var requestOrder = [ requestList ];
       }
 
-      console.log("requestOrder: " + util.inspect(requestOrder));
-
       // do actual requests
       var doRequest = function(reqArray, callback) {
-        //var reqArray = requestOrder[i];
-        console.log("reqArray: " + util.inspect(reqArray));
         async.map(reqArray, routeRequest, function(err, results) {
           if (err) return callback(err);
-
-          console.log("results: " + util.inspect(results));
 
           // check for any errors, disable any children on error
           _.each(results, function(result) {
@@ -200,7 +186,9 @@ module.exports = {
       };
       async.map(requestOrder, doRequest, function(err, results) {
         if (err) return next(err);
-        sendResponse(null, _.flatten(results));
+        sendResponse(null, _.indexBy(_.flatten(results), function(result) {
+          return result.requestId
+        }));
       });
     };
   }
