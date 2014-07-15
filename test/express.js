@@ -84,7 +84,7 @@ describe("Express.js TestSuite", function() {
         return callback(err);
       }
 
-      return callback(null, {value: "test"});
+      return callback(new Error("test failure"), {value: "test"});
     });
     jsonRouter.newRequest("req2", function(context, arguments, callback) {
 
@@ -112,7 +112,8 @@ describe("Express.js TestSuite", function() {
       },
       {
         name: "req2",
-        arguments: ["bar", 5]
+        arguments: ["bar", 5],
+        dependsOn: "req1"
       }]
     };
 
