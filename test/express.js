@@ -6,6 +6,7 @@ var bodyParser = require('body-parser');
 var _ = require('lodash');
 var jsonRouter = require('../index.js');
 chai.should();
+var util = require('util');
 
 describe("Express.js TestSuite", function() {
 
@@ -58,7 +59,7 @@ describe("Express.js TestSuite", function() {
         if (result.error) {
           return done(new Error(result.error));
         }
-        result.should.have.property("name", "testing");
+        result.should.have.property("requestId", "testing");
         result.should.have.property("result");
         result.result.should.have.property("value", 10);
 
@@ -66,7 +67,7 @@ describe("Express.js TestSuite", function() {
       });
   });
 
-  it("Multiple Requests", function(done) {
+  it.only("Multiple Requests", function(done) {
     var app = express();
     app.use(bodyParser.json());
 
@@ -125,6 +126,8 @@ describe("Express.js TestSuite", function() {
           return done(err);
         }
 
+        console.log("res.body: " + util.inspect(res.body));
+
         // assertions
         expect(res.body).to.exist;
         expect(res.body).to.be.a('array').with.length(2);
@@ -132,7 +135,7 @@ describe("Express.js TestSuite", function() {
         if (result.error) {
           return done(new Error(result.error));
         }
-        result.should.have.property("name", "req1");
+        result.should.have.property("requestId", "req1");
         result.should.have.property("result");
         result.result.should.have.property("value", "test");
 
@@ -140,7 +143,7 @@ describe("Express.js TestSuite", function() {
         if (result.error) {
           return done(new Error(result.error));
         }
-        result.should.have.property("name", "req2");
+        result.should.have.property("requestId", "req2");
         result.should.have.property("result");
         result.result.should.have.property("value", 5);
 

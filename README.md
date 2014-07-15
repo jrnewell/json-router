@@ -1,10 +1,10 @@
 # JSON Router
 
-An alternative moblie-focused router/rpc middleware that uses the JSON body instead of URL slugs to route requests.
+An alternative moblie-focused router/RPC middleware that uses the JSON body instead of URL slugs to route requests.
 
-The major advantage of to this approach is that it allows multiple requests per HTTP request to happen in a straight-forward manner.  This reduces latency in your client with resource constrained devices like mobile apps.
+The major advantage of this approach is that it easily allows multiple server requests to occur per HTTP request.  This reduces latency in your client with network constrained devices like mobile apps.
 
-JSON Router works similar to javascript function calls by taking a name and a variable number of arguments via an array.  The request object can handle an array of requests.  The values returned by each request handler and will be aggregated into a JSON array which will be returned to the client.
+JSON Router works similar to javascript Function.apply() by taking a name and a variable number of arguments via an array.  The request object can handle an array of server requests.  The values returned by each request handler and will be aggregated into a JSON array which will be returned to the client.
 
 JSON Router can take an optional callback if you would like to do custom handling on the result object.
 
@@ -81,7 +81,7 @@ app.use(jsonRouter.middleware());
 
 ```
 
-Example of a JSON body request object sent using POST.  The middleware looks for JSON objects that have the top-level property 'jsonRequests' (this can be changed with the 'reqProperty' option).  If this property does not exist, it will continue with the middleware chain.
+Example of a JSON body request object sent using POST.  The middleware looks for JSON objects that have the top-level property 'jsonRequests' (this can be changed with the 'reqProperty' option).  If this property does not exist, it will continue on with the middleware chain.
 
 ```json
 
@@ -129,7 +129,7 @@ Example of a response object
 
 ```
 
-Example of a response object with an error.  Note that since multiple requests can occur per HTTP request, it may be possible that some requests succeeed while other fail.  Therefore, one should use the 'error' property on the return object to deteremine success instead of the HTTP code.
+Example of a response object with an error.  Note that since multiple server requests can occur per HTTP request, it may be possible that some server requests succeeed while other fail.  Therefore, one should use the 'error' property on the return object to deteremine success instead of the HTTP code.
 
 ```json
 
