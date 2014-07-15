@@ -51,7 +51,7 @@ module.exports = {
         if (request._skip) {
           var resObj = {
             requestId: request._depId,
-            error: "Request skipped due to failed dependency",
+            error: (request._error ? request._error : "Request skipped"),
             _request: request
           }
           return callback(null, resObj);
@@ -113,7 +113,12 @@ module.exports = {
         req._parent = null;
         req._children = [];
         req._orderIdx = 0;
-        req._depId = (_.isString(req.reqId) ? req.requestId : req.name);
+        req._depId = (_.isString(req.requestId) ? req.requestId : req.name);
+        if (depMap[req._depId]) {
+          req._skip = true;
+          req._error = "Request skipped due duplicate requestId";
+          return;
+        }
         depMap[req._depId] = req;
         if (!anyDeps) anyDeps = true;
       });
@@ -175,6 +180,7 @@ module.exports = {
             if (anyDeps && result.error && !result._request._skip) {
               var recurse = function(req) {
                 req._skip = true;
+                req._error = "Request skipped due to failed dependency";
                 _.each(req._children, recurse);
               };
               recurse(result._request);

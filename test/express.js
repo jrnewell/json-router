@@ -177,6 +177,7 @@ describe("Express.js TestSuite", function() {
       },
       {
         name: "req3",
+        requestId: "req3",
         arguments: []
       }]
     };
