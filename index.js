@@ -49,12 +49,8 @@ module.exports = {
       var routeRequest = function(request, callback) {
         // skip request
         if (request._skip) {
-          var resObj = {
-            requestId: request._depId,
-            error: (request._error ? request._error : "Request skipped"),
-            _request: request
-          }
-          return callback(null, resObj);
+          if (!request._error) request._error = "Request skipped";
+          return callback(null, request);
         }
 
         var reqName = request.name;
@@ -78,16 +74,10 @@ module.exports = {
         }
 
         reqMapping(context, reqArgs, function(err, result) {
-          // build result object
-          var resObj = {
-            requestId: request._depId,
-            result: result,
-            _request: request
-          };
-          if (err) {
-            resObj.error = err.toString();
-          }
-          callback(null, resObj);
+          // attach result object
+          request._result = result;
+          if (err) request._error = err.toString();
+          callback(null, request);
         });
       };
 
@@ -171,30 +161,34 @@ module.exports = {
       }
 
       // do actual requests
+      var results = {}
       var doRequest = function(reqArray, callback) {
-        async.map(reqArray, routeRequest, function(err, results) {
+        async.map(reqArray, routeRequest, function(err, requests) {
           if (err) return callback(err);
 
           // check for any errors, disable any children on error
-          _.each(results, function(result) {
-            if (anyDeps && result.error && !result._request._skip) {
+          _.each(requests, function(req) {
+            if (anyDeps && req._error && !req._skip) {
               var recurse = function(req) {
                 req._skip = true;
                 req._error = "Request skipped due to failed dependency";
                 _.each(req._children, recurse);
               };
-              recurse(result._request);
+              _.each(req._children, recurse);
             }
-            delete result._request;
+            var resObj = {
+              requestId: req._depId
+            };
+            if (req._result) resObj.result = req._result;
+            if (req._error) resObj.error = req._error;
+            results[resObj.requestId] = resObj;
           });
-          callback(null, results);
+          callback(null);
         });
       };
-      async.map(requestOrder, doRequest, function(err, results) {
+      async.each(requestOrder, doRequest, function(err) {
         if (err) return next(err);
-        sendResponse(null, _.indexBy(_.flatten(results), function(result) {
-          return result.requestId;
-        }));
+        sendResponse(null, results);
       });
     };
   }
