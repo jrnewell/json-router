@@ -4,7 +4,7 @@ var supertest = require('supertest');
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('lodash');
-var jsonRouter = require('../index.js');
+var jsonRouter = require('../lib/index.js');
 chai.should();
 
 describe("Express.js TestSuite", function() {
