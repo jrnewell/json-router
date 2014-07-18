@@ -40,10 +40,81 @@ module.exports = {
         return next();
       }
 
+      // request instance variables
+      var depMap = {};
+      var anyDeps = false;
+      var requestOrder = [];
+      var results = {};
+      var reqOrderIdx = -1;
+
       var context = {
         jsonRouter: _self,
         httpReq: req,
-        httpRes: res
+        httpRes: res,
+        getResult: function(reqId) {
+          return results[reqId];
+        },
+        getRequest: function(reqId) {
+          return depMap[reqId];
+        },
+        enqueueRequest: function(reqName, args, reqId, dependsOn, callback) {
+          // check for some errors
+          reqId = (_.isString(reqId) ? reqId : reqName);
+          if (depMap[req._reqId]) {
+            return callback(new Error("Duplicate requestId"));
+          }
+
+          if (!_.isArray(args) && _.isObject(args)) {
+            args = [ args ];
+          }
+          else if (!_.isArray(args)) {
+            return callback(new Error("Invalid args parameter"));
+          }
+
+          // create request obj
+          var req = {
+            name: reqName,
+            _parent: null,
+            _children: [],
+            _orderIdx: reqOrderIdx + 1,
+            _reqId: reqId
+          };
+
+          // add to dep map
+          depMap[req._reqId] = req;
+
+          if (_.isString(dependsOn)) {
+            var parent = depMap[dependsOn];
+            if (parent) {
+              parent._children.push(req);
+              req._parent = parent;
+            }
+
+            if (parent._orderIdx >= req._orderIdx) {
+              req._orderIdx = parent._orderIdx + 1;
+            }
+
+            req.dependsOn = dependsOn;
+            if (!anyDeps) anyDeps = true;
+          }
+
+          // add to request order array
+          var newLeng = req._orderIdx + 1;
+          if (newLeng > requestOrder.length) {
+            while (requestOrder.length < newLeng) {
+              requestOrder.push([]);
+            }
+          }
+          requestOrder[req._orderIdx].push(req);
+          return callback(null, req);
+        },
+        cancelRequest: function(reqId) {
+          var req = depMap[reqId];
+          if (req) {
+            req._skip = true;
+            req._error = "Request is cancelled";
+          }
+        }
       };
 
       var routeRequest = function(request, callback) {
@@ -58,6 +129,12 @@ module.exports = {
           return callback(new Error("missing 'name' property for request"));
         }
 
+        context.request = request;
+        if (req.dependsOn && req._parent) {
+          context.dependsOn = req.dependsOn;
+          context.parentResult = req._parent.result;
+        }
+        context.requestId = req._reqId;
         context.name = reqName;
 
         var reqMapping = _self._requests[reqName];
@@ -97,24 +174,21 @@ module.exports = {
       }
 
       // initialize depedency metadata
-      depMap = {};
-      var anyDeps = false
       _.each(requestList, function(req) {
         req._parent = null;
         req._children = [];
         req._orderIdx = 0;
-        req._depId = (_.isString(req.requestId) ? req.requestId : req.name);
-        if (depMap[req._depId]) {
+        req._reqId = (_.isString(req.requestId) ? req.requestId : req.name);
+        if (depMap[req._reqId]) {
           req._skip = true;
           req._error = "Request skipped due duplicate requestId";
           return;
         }
-        depMap[req._depId] = req;
-        if (!anyDeps) anyDeps = true;
+        depMap[req._reqId] = req;
+        if (req.dependsOn && !anyDeps) anyDeps = true;
       });
 
       // we can skip these parts if no dependencies were detected
-      var requestOrder = [];
       if (anyDeps) {
         // build depdency tree
         for(var i = 0; i < requestList.length; i++) {
@@ -161,8 +235,8 @@ module.exports = {
       }
 
       // do actual requests
-      var results = {}
       var doRequest = function(reqArray, callback) {
+        reqOrderIdx += 1;
         async.map(reqArray, routeRequest, function(err, requests) {
           if (err) return callback(err);
 
@@ -177,7 +251,7 @@ module.exports = {
               _.each(req._children, recurse);
             }
             var resObj = {
-              requestId: req._depId
+              requestId: req._reqId
             };
             if (req._result) resObj.result = req._result;
             if (req._error) resObj.error = req._error;
