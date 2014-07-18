@@ -111,6 +111,7 @@ module.exports = {
         cancelRequest: function(reqId) {
           var req = depMap[reqId];
           if (req) {
+            req._status = "cancelled";
             req._skip = true;
             req._error = "Request is cancelled";
           }
@@ -120,6 +121,7 @@ module.exports = {
       var routeRequest = function(request, callback) {
         // skip request
         if (request._skip) {
+          request._status = "cancelled";
           if (!request._error) request._error = "Request skipped";
           return callback(null, request);
         }
@@ -150,8 +152,10 @@ module.exports = {
           reqArgs = [ reqArgs ];
         }
 
+        request._status = "running";
         reqMapping(context, reqArgs, function(err, result) {
           // attach result object
+          request._status = "finished";
           request._result = result;
           if (err) request._error = err.toString();
           callback(null, request);
@@ -175,11 +179,13 @@ module.exports = {
 
       // initialize depedency metadata
       _.each(requestList, function(req) {
+        req._status = "waiting";
         req._parent = null;
         req._children = [];
         req._orderIdx = 0;
         req._reqId = (_.isString(req.requestId) ? req.requestId : req.name);
         if (depMap[req._reqId]) {
+          request._status = "cancelled";
           req._skip = true;
           req._error = "Request skipped due duplicate requestId";
           return;
@@ -244,6 +250,7 @@ module.exports = {
           _.each(requests, function(req) {
             if (anyDeps && req._error && !req._skip) {
               var recurse = function(req) {
+                req._status = "cancelled";
                 req._skip = true;
                 req._error = "Request skipped due to failed dependency";
                 _.each(req._children, recurse);
