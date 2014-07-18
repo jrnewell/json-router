@@ -187,7 +187,7 @@ module.exports = {
         req._orderIdx = 0;
         req._reqId = (_.isString(req.requestId) ? req.requestId : req.name);
         if (depMap[req._reqId]) {
-          request._status = "cancelled";
+          req._status = "cancelled";
           req._skip = true;
           req._error = "Request skipped due duplicate requestId";
           return;
