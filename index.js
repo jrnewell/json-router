@@ -27,11 +27,13 @@ module.exports = {
 
     // set default options
     opts = (_.isObject(opts) ? opts : {});
-    _.defaults(opts, {reqProperty: 'jsonRequests'});
+    _.defaults(opts, {reqProperty: 'jsonRequests', flattenSingle: true, sendObject: true});
     callback = (_.isFunction(callback) ? callback : _self._defaultCallback);
 
     // get options
     var reqProperty = opts.reqProperty;
+    var flattenSingle = opts.flattenSingle;
+    var sendObject = opts.sendObject;
 
     return function(req, res, next) {
       // if there is no 'jsonRequests' (reqProperty) parameter, then skip this middleware
@@ -269,6 +271,14 @@ module.exports = {
       };
       async.each(requestOrder, doRequest, function(err) {
         if (err) return next(err);
+        if (flattenSingle) {
+          var keys = _.keys(results);
+          if (keys.length === 1) results = results[keys[0]];
+        }
+        if (!sendObject) {
+          results = _.values(results);
+        }
+
         sendResponse(null, results);
       });
     };

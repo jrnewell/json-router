@@ -53,8 +53,8 @@ describe("Express.js TestSuite", function() {
 
         // assertions
         expect(res.body).to.exist;
-        expect(res.body).to.be.an('object').with.property("testing");
-        var result = res.body.testing;
+        expect(res.body).to.be.an('object');
+        var result = res.body;
         if (result.error) {
           return done(new Error(result.error));
         }
