@@ -44,7 +44,7 @@ app.use(jsonRouter.middleware(opts, callback));
 Both opts and callback are optional
 
 opts = {
-  reqProperty: name of top-level property that defined a JSON Router request (default: 'jsonRequests')
+  routeProperty: name of top-level property that defined a JSON Router request (default: 'jsonRoute')
 }
 
 default callback
@@ -81,12 +81,12 @@ app.use(jsonRouter.middleware());
 
 ```
 
-Example of a JSON body request object sent using POST.  The middleware looks for JSON objects that have the top-level property 'jsonRequests' (this can be changed with the 'reqProperty' option).  If this property does not exist, it will continue on with the middleware chain.
+Example of a JSON body request object sent using POST.  The middleware looks for JSON objects that have the top-level property 'jsonRoute' (this can be changed with the 'routeProperty' option).  If this property does not exist, it will continue on with the middleware chain.
 
 ```json
 
 {
-  "jsonRequests": {
+  "jsonRoute": {
     "name": "myRequestName1",
     "arguments": [ "foo" ]
   }
@@ -99,7 +99,7 @@ Example of a multiple-request object
 ```json
 
 {
-  "jsonRequests": [
+  "jsonRoute": [
   {
     "name": "myRequestName1",
     "arguments": [ "foo" ]

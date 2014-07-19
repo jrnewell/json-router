@@ -39,7 +39,7 @@ describe("Express.js TestSuite", function() {
 
         // assertions
         try {
-          context.should.contain.keys("jsonRouter", "httpReq", "httpRes", "name", "requestId", "request");
+          context.should.contain.keys("httpReq", "httpRes", "name", "requestId", "request");
           var req = context.request;
           req.should.contain.keys("name", "arguments", "requestId");
           var status = req.status;
@@ -60,7 +60,7 @@ describe("Express.js TestSuite", function() {
     };
 
     var postObj = {
-      jsonRequests: {
+      jsonRoute: {
         name: "testing",
         arguments: ["foo"]
       }
@@ -115,7 +115,7 @@ describe("Express.js TestSuite", function() {
     };
 
     var postObj = {
-      jsonRequests: [
+      jsonRoute: [
       {
         name: "req1",
         arguments: ["foo"]
@@ -164,7 +164,7 @@ describe("Express.js TestSuite", function() {
     };
 
     var postObj = {
-      jsonRequests: [
+      jsonRoute: [
       {
         name: "req1",
         arguments: ["foo"]
