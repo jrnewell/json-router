@@ -24,11 +24,25 @@ var testHarness = function(handlerCb, postObj, resultsCb, done) {
     .end(function(err, res) {
       if (err) return done(err);
 
-      err = resultsCb(res);
-      if (err) return done(err);
+      try {
+        err = resultsCb(res);
+        if (err) return done(err);
+      }
+      catch(err) { return done(err); }
 
       return done();
     });
+};
+
+var getResult = function(res, resultName, expectError) {
+  expect(res.body).to.exist
+    .and.to.be.an('object')
+    .with.property(resultName);
+  var result = res.body[resultName];
+  if (!expectError && result.error) {
+    throw new Error(result.error);
+  }
+  return result;
 }
 
 describe("Express.js TestSuite", function() {
@@ -128,21 +142,11 @@ describe("Express.js TestSuite", function() {
 
     var resultsCb = function(res) {
       // assertions
-      expect(res.body).to.exist
-        .and.to.be.an('object')
-        .with.property("req1");
-      var result = res.body.req1
-      if (result.error) {
-        return new Error(result.error);
-      }
+      var result = getResult(res, "req1");
       result.should.have.property("requestId", "req1");
       result.should.have.deep.property("result.value", "test");
 
-      res.body.should.have.property("req2");
-      result = res.body.req2
-      if (result.error) {
-        return new Error(result.error);
-      }
+      var result = getResult(res, "req2");
       result.should.have.property("requestId", "req2");
       result.should.have.deep.property("result.value", 5);
     };
@@ -183,23 +187,15 @@ describe("Express.js TestSuite", function() {
 
     var resultsCb = function(res) {
       // assertions
-      expect(res.body).to.exist
-        .and.to.be.an('object')
-        .with.property("req1");
-      var result = res.body.req1
+      var result = getResult(res, "req1", true);
       result.should.have.property("requestId", "req1");
       result.should.have.property("error", "Error: My test error");
 
-      res.body.should.have.property("req2");
-      result = res.body.req2
+      var result = getResult(res, "req2", true);
       result.should.have.property("requestId", "req2");
       result.should.have.property("error", "Request skipped due to failed dependency");
 
-      res.body.should.have.property("req3");
-      result = res.body.req3
-      if (result.error) {
-        return new Error(result.error);
-      }
+      var result = getResult(res, "req3");
       result.should.have.property("requestId", "req3");
       result.should.have.deep.property("result.value", "foobar");
     };
