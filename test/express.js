@@ -39,7 +39,11 @@ describe("Express.js TestSuite", function() {
 
         // assertions
         try {
-          context.should.contain.keys("jsonRouter", "httpReq", "httpRes", "name", "requestId");
+          context.should.contain.keys("jsonRouter", "httpReq", "httpRes", "name", "requestId", "request");
+          var req = context.request;
+          req.should.contain.keys("name", "arguments", "requestId");
+          var status = req.status;
+          expect(status).to.equal("running");
           context.should.have.property("name", "testing");
           context.should.have.property("requestId", "testing");
 
