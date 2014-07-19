@@ -146,8 +146,64 @@ describe("Express.js TestSuite", function() {
       result.should.have.property("requestId", "req1");
       result.should.have.deep.property("result.value", "test");
 
-      var result = getResult(res, "req2");
+      result = getResult(res, "req2");
       result.should.have.property("requestId", "req2");
+      result.should.have.deep.property("result.value", 5);
+    };
+
+    testHarness(handlerCb, postObj, resultsCb, done);
+  });
+
+  it("Dependency Success", function(done) {
+    var handlerCb = function(jsonRouter) {
+      jsonRouter.newRequest("req1", function(context, arguments, callback) {
+        return callback(null, {value: {success: true}});
+      });
+      jsonRouter.newRequest("req2", function(context, arguments, callback) {
+        context.should.have.property("dependsOn", "req1");
+        context.should.have.property("parentResult");
+        return callback(null, {value: arguments});
+      });
+      jsonRouter.newRequest("req3", function(context, arguments, callback) {
+        context.should.have.property("dependsOn", "req2");
+        context.should.have.property("parentResult")
+          .and.to.be.an('object')
+          .with.property('value').with.length(2);
+        return callback(null, {value: context.parentResult.value[1]});
+      });
+    };
+
+    var postObj = {
+      jsonRoute: [
+      {
+        name: "req1",
+        arguments: ["foo"]
+      },
+      {
+        name: "req2",
+        arguments: ["bar", 5],
+        dependsOn: "req1"
+      },
+      {
+        name: "req3",
+        requestId: "reqLast",
+        arguments: [],
+        dependsOn: "req2"
+      }]
+    };
+
+    var resultsCb = function(res) {
+      // assertions
+      var result = getResult(res, "req1");
+      result.should.have.property("requestId", "req1");
+      result.should.have.deep.property("result.value.success", true);
+
+      result = getResult(res, "req2");
+      result.should.have.property("requestId", "req2");
+      result.should.have.deep.property("result.value").equal(["bar", 5]);
+
+      result = getResult(res, "reqLast");
+      result.should.have.property("requestId", "reqLast");
       result.should.have.deep.property("result.value", 5);
     };
 
@@ -191,11 +247,11 @@ describe("Express.js TestSuite", function() {
       result.should.have.property("requestId", "req1");
       result.should.have.property("error", "Error: My test error");
 
-      var result = getResult(res, "req2", true);
+      result = getResult(res, "req2", true);
       result.should.have.property("requestId", "req2");
       result.should.have.property("error", "Request skipped due to failed dependency");
 
-      var result = getResult(res, "req3");
+      result = getResult(res, "req3");
       result.should.have.property("requestId", "req3");
       result.should.have.deep.property("result.value", "foobar");
     };
