@@ -24,12 +24,12 @@ var testHarness = function(handlerCb, postObj, resultsCb, done) {
     .end(function(err, res) {
       if (err) return done(err);
 
-      resultsCb(res);
+      err = resultsCb(res);
+      if (err) return done(err);
 
       return done();
     });
 }
-
 
 describe("Express.js TestSuite", function() {
 
@@ -39,14 +39,13 @@ describe("Express.js TestSuite", function() {
 
         // assertions
         try {
-          context.should.have.property("jsonRouter");
+          context.should.contain.keys("jsonRouter", "httpReq", "httpRes", "name", "requestId");
           context.should.have.property("name", "testing");
-          context.should.have.property("httpReq");
-          context.should.have.property("httpRes");
+          context.should.have.property("requestId", "testing");
 
-          expect(arguments).to.exist;
-          expect(arguments).to.be.a('array').with.length(1);
-          arguments[0].should.equal("foo");
+          expect(arguments).to.exist
+            .and.to.be.a('array').with.length(1)
+            .with.deep.property("[0]", "foo");
         }
         catch(err) {
           return callback(err);
@@ -65,15 +64,13 @@ describe("Express.js TestSuite", function() {
 
     var resultsCb = function(res) {
       // assertions
-      expect(res.body).to.exist;
-      expect(res.body).to.be.an('object');
+      expect(res.body).to.exist.and.to.be.an('object');
       var result = res.body;
       if (result.error) {
-        return done(new Error(result.error));
+        return new Error(result.error);
       }
       result.should.have.property("requestId", "testing");
-      result.should.have.property("result");
-      result.result.should.have.property("value", 10);
+      result.should.have.deep.property("result.value", 10);
     };
 
     testHarness(handlerCb, postObj, resultsCb, done);
@@ -86,9 +83,9 @@ describe("Express.js TestSuite", function() {
         // assertions
         try {
           context.should.have.property("name", "req1");
-          expect(arguments).to.exist;
-          expect(arguments).to.be.a('array').with.length(1);
-          arguments[0].should.equal("foo");
+          expect(arguments).to.exist
+            .and.to.be.a('array').with.length(1)
+            .with.deep.property("[0]", "foo");
         }
         catch(err) {
           return callback(err);
@@ -101,10 +98,9 @@ describe("Express.js TestSuite", function() {
         // assertions
         try {
           context.should.have.property("name", "req2");
-          expect(arguments).to.exist;
-          expect(arguments).to.be.a('array').with.length(2);
-          arguments[0].should.equal("bar");
-          arguments[1].should.equal(5);
+          expect(arguments).to.exist
+            .and.to.be.a('array').with.length(2)
+            .and.deep.equal(['bar', 5]);
         }
         catch(err) {
           return callback(err);
@@ -128,24 +124,23 @@ describe("Express.js TestSuite", function() {
 
     var resultsCb = function(res) {
       // assertions
-      expect(res.body).to.exist;
-      expect(res.body).to.be.an('object').with.property("req1");
+      expect(res.body).to.exist
+        .and.to.be.an('object')
+        .with.property("req1");
       var result = res.body.req1
       if (result.error) {
-        return done(new Error(result.error));
+        return new Error(result.error);
       }
       result.should.have.property("requestId", "req1");
-      result.should.have.property("result");
-      result.result.should.have.property("value", "test");
+      result.should.have.deep.property("result.value", "test");
 
       res.body.should.have.property("req2");
       result = res.body.req2
       if (result.error) {
-        return done(new Error(result.error));
+        return new Error(result.error);
       }
       result.should.have.property("requestId", "req2");
-      result.should.have.property("result");
-      result.result.should.have.property("value", 5);
+      result.should.have.deep.property("result.value", 5);
     };
 
     testHarness(handlerCb, postObj, resultsCb, done);
@@ -184,8 +179,9 @@ describe("Express.js TestSuite", function() {
 
     var resultsCb = function(res) {
       // assertions
-      expect(res.body).to.exist;
-      expect(res.body).to.be.an('object').with.property("req1");
+      expect(res.body).to.exist
+        .and.to.be.an('object')
+        .with.property("req1");
       var result = res.body.req1
       result.should.have.property("requestId", "req1");
       result.should.have.property("error", "Error: My test error");
@@ -198,14 +194,12 @@ describe("Express.js TestSuite", function() {
       res.body.should.have.property("req3");
       result = res.body.req3
       if (result.error) {
-        return done(new Error(result.error));
+        return new Error(result.error);
       }
       result.should.have.property("requestId", "req3");
-      result.should.have.property("result");
-      result.result.should.have.property("value", "foobar");
+      result.should.have.deep.property("result.value", "foobar");
     };
 
     testHarness(handlerCb, postObj, resultsCb, done);
   });
-
 });
