@@ -116,16 +116,16 @@ Example of a response object
 
 ```json
 
-[
-  {
-    "name": "myRequestName1",
+{
+  "myRequestName1": {
+    "requestId": "myRequestName1",
     "result": "myResult"
   },
-  {
-    "name": "myRequestName2",
+  "myRequestName2": {
+    "requestId": "myRequestName2",
     "arguments": [ 1, 2, 3 ]
   }
-]
+}
 
 ```
 
@@ -133,12 +133,10 @@ Example of a response object with an error.  Note that since multiple server req
 
 ```json
 
-[
-  {
-    "name": "myRequestName1",
-    "error": "My Error String"
-  }
-]
+{
+  "requestId": "myRequestName1",
+  "error": "My Error String"
+}
 
 ```
 
