@@ -258,4 +258,50 @@ describe("Express.js TestSuite", function() {
 
     testHarness(handlerCb, postObj, resultsCb, done);
   });
+
+  it("Enqueue and Cancel Request", function(done) {
+    var handlerCb = function(jsonRouter) {
+      jsonRouter.newRequest("req1", function(context, arguments, callback) {
+        context.enqueueRequest("req3", [])
+        context.cancelRequest("req2");
+        return callback(null, {value: "ret1"});
+      });
+      jsonRouter.newRequest("req2", function(context, arguments, callback) {
+        return callback(null, {value: "ret2"});
+      });
+      jsonRouter.newRequest("req3", function(context, arguments, callback) {
+        return callback(null, {value: "ret3"});
+      });
+    };
+
+    var postObj = {
+      jsonRoute: [
+      {
+        name: "req1",
+        arguments: ["foo"]
+      },
+      {
+        name: "req2",
+        arguments: ["bar", 5],
+        dependsOn: "req1"
+      }]
+    };
+
+    var resultsCb = function(res) {
+      // assertions
+      var result = getResult(res, "req1");
+      result.should.have.property("requestId", "req1");
+      result.should.have.deep.property("result.value", "ret1");
+
+      result = getResult(res, "req2", true);
+      result.should.have.property("requestId", "req2");
+      result.should.have.property("error", "Request is cancelled");
+
+      result = getResult(res, "req3");
+      result.should.have.property("requestId", "req3");
+      result.should.have.deep.property("result.value", "ret3");
+    };
+
+    testHarness(handlerCb, postObj, resultsCb, done);
+  });
 });
