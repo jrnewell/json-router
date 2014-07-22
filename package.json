@@ -1,7 +1,7 @@
 {
   "name": "json-router",
-  "version": "0.0.1",
-  "description": "An alternative moblie-focused router/rpc middleware that uses the JSON body instead of URL slugs to route requests",
+  "version": "0.0.2",
+  "description": "An alternative mobile-focused router/rpc middleware that uses the JSON body instead of URL slugs to route requests",
   "main": "./index.js",
   "repository": {
     "type": "git",
@@ -11,14 +11,14 @@
     "test": "mocha"
   },
   "dependencies": {
-    "lodash": "*",
-    "async": "*"
+    "lodash": "~2.4.1",
+    "async": "~0.9.0"
   },
   "devDependencies": {
-    "chai": "*",
-    "express": "*",
-    "body-parser": "*",
-    "supertest": "*"
+    "chai": "~1.9.1",
+    "express": "~4.6.1",
+    "body-parser": "~1.4.3",
+    "supertest": "~0.13.0"
   },
   "keywords": [
     "router", "express", "connect", "json", "rpc", "mobile"
