@@ -1,6 +1,6 @@
 # JSON Router
 
-An alternative moblie-focused router/RPC middleware that uses the JSON body instead of URL slugs to route requests.
+An alternative mobile-focused router/RPC middleware that uses the JSON body instead of URL slugs to route requests.
 
 The major advantage of this approach is that it easily allows multiple server requests to occur per HTTP request.  This reduces latency in your client with network constrained devices like mobile apps.
 
@@ -105,7 +105,7 @@ Similarly, the router will reply with multiple results
 
 ```
 
-If there is an error, the response object will use the `error` property instead of a non-200 HTTP code.  This is because it may be possible that some request handlers succeeed while other fail.
+If there is an error, the response object will use the `error` property instead of a non-200 HTTP code.  This is because it may be possible that some request handlers succeed while other fail.
 
 ```json
 
@@ -145,7 +145,7 @@ If you would like to execute the same handler function multiple times in a singl
 
 ### Dependencies
 
-Normally, JSON Router will run all requests concurrently.  However, this behavior can be modified using dependencies between requeusts.  The property `dependsOn` causes JSON Router to build a dependency tree to execute the requests.  In this example, `myRequestName2` will run after `myRequestName1` (`myRequestName3` will run concurrently with `myRequestName1`).
+Normally, JSON Router will run all requests concurrently.  However, this behavior can be modified using dependencies between requests.  The property `dependsOn` causes JSON Router to build a dependency tree to execute the requests.  In this example, `myRequestName2` will run after `myRequestName1` (`myRequestName3` will run concurrently with `myRequestName1`).
 
 ```json
 
@@ -169,7 +169,7 @@ Normally, JSON Router will run all requests concurrently.  However, this behavio
 
 ```
 
-If a request handler fails, all depedent children requests will be cancelled and not run.
+If a request handler fails, all dependent children requests will be cancelled and not run.
 
 ```json
 
@@ -194,7 +194,7 @@ If a request handler fails, all depedent children requests will be cancelled and
 
 ### Handler Function
 
-The handler function should provide the follow signuature
+The handler function should provide the follow signature
 
 ```javascript
 handlerFunc = function(context, arguments, callback)
