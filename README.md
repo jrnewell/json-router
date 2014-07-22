@@ -41,7 +41,7 @@ app.use(jsonRouter.middleware());
 
 ```
 
-On the client, you send a JSON object in the HTTP body using POST.  The middleware looks for JSON objects that have the top-level property 'jsonRoute' (this can be changed with the `routeProperty` option).  If this property does not exist, the server will continue on with the middleware chain.
+On the client, you send the server a JSON object in the HTTP body using POST.  The middleware looks for JSON objects that have the top-level property 'jsonRoute' (this can be changed with the `routeProperty` option).  If this property does not exist, the server will continue on with the middleware chain.
 
 ```json
 
@@ -237,9 +237,7 @@ callback = function(err, result)
 JSON Router can take options and a custom callback function when instantiating the middleware function.
 
 ```javascript
-
 app.use(jsonRouter.middleware(opts, callback));
-
 ```
 
 #### Options
