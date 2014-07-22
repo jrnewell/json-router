@@ -88,6 +88,23 @@ JSON Router can take multiple requests per HTTP request
 
 ```
 
+Or you can use an object-literal notation where each key is the request's `requestId`.
+
+```json
+
+{
+  "jsonRoute": {
+    "myRequestName1": {
+      "arguments": [ "foo" ]
+    },
+    "myRequestName2": {
+      "arguments": [ "arg1", "arg2", "arg3" ]
+    }
+  }
+}
+
+```
+
 Similarly, the router will reply with multiple results
 
 ```json
@@ -287,7 +304,7 @@ jsonRouter.on('status', function(reqId, status, req) {
 
 ## Coming Soon
 
-Object literal notation for requests and dependencies.
+Object literal notation for dependencies.
 
 ## License
 

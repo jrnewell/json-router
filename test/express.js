@@ -154,6 +154,65 @@ describe("Express.js TestSuite", function() {
     testHarness(handlerCb, postObj, resultsCb, done);
   });
 
+  it("Multiple Literal-Notation Requests", function(done) {
+    var handlerCb = function(jsonRouter) {
+      jsonRouter.newRequest("req1", function(context, arguments, callback) {
+
+        // assertions
+        try {
+          context.should.have.property("name", "req1");
+          expect(arguments).to.exist
+            .and.to.be.a('array').with.length(1)
+            .with.deep.property("[0]", "foo");
+        }
+        catch(err) {
+          return callback(err);
+        }
+
+        return callback(null, {value: "test"});
+      });
+      jsonRouter.newRequest("req2", function(context, arguments, callback) {
+
+        // assertions
+        try {
+          context.should.have.property("name", "req2");
+          expect(arguments).to.exist
+            .and.to.be.a('array').with.length(2)
+            .and.deep.equal(['bar', 5]);
+        }
+        catch(err) {
+          return callback(err);
+        }
+
+        return callback(null, {value: arguments[1]});
+      });
+    };
+
+    var postObj = {
+      jsonRoute: {
+        req1: {
+          arguments: ["foo"]
+        },
+        req2: {
+          arguments: ["bar", 5]
+        }
+      }
+    };
+
+    var resultsCb = function(res) {
+      // assertions
+      var result = getResult(res, "req1");
+      result.should.have.property("requestId", "req1");
+      result.should.have.deep.property("result.value", "test");
+
+      result = getResult(res, "req2");
+      result.should.have.property("requestId", "req2");
+      result.should.have.deep.property("result.value", 5);
+    };
+
+    testHarness(handlerCb, postObj, resultsCb, done);
+  });
+
   it("Dependency Success", function(done) {
     var handlerCb = function(jsonRouter) {
       jsonRouter.newRequest("req1", function(context, arguments, callback) {
